@@ -1,5 +1,6 @@
-import { Entity, Column, OneToOne} from "typeorm"
+import { Entity, Column, OneToOne, OneToMany} from "typeorm"
 import { Point } from "./Point";
+import { PointConnection } from "./PointConnection";
 
 @Entity()
 export class Panorama extends Point{
@@ -19,4 +20,5 @@ export class Panorama extends Point{
         name: "desciption", 
         nullable: true})
     description: string | null;
+
 }

@@ -1,14 +1,17 @@
-import { Entity, OneToOne, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm"
+import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm"
 import { Point } from "./Point";
+import { Panorama } from "./Panorama";
 
 @Entity()
 export class PointConnection{
 
-    @OneToOne(() => Point, (point) => point.id)
+    @ManyToOne(() => Panorama, (panorama) => panorama.id)
     @PrimaryColumn({type:"int"})
+    @JoinColumn()
     point1: Point
 
-    @OneToOne(() => Point, (point) => point.id)
+    @ManyToOne(() => Panorama, (panorama) => panorama.id)
     @PrimaryColumn({type:"int"})
+    @JoinColumn()
     point2: Point
 }
