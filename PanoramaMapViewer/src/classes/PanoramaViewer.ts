@@ -4,10 +4,13 @@ import {
     PerspectiveCamera, 
     TextureLoader, 
     Color,
+Raycaster,
+Vector2,
 } from "three"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
 import { PointArrow } from "./PointArrow"
+import { Point } from "./Point"
 
 export class PanoramaViewer {
     private _width: number = 0
@@ -23,11 +26,13 @@ export class PanoramaViewer {
     private readonly scene: Scene = new Scene()
     private readonly frontScene: Scene = new Scene()
     private readonly camera: PerspectiveCamera = new PerspectiveCamera()
+    private readonly mouse: Vector2 = new Vector2()
+    private readonly raycaster: Raycaster = new Raycaster()
     private readonly controls: OrbitControls = new OrbitControls(this.camera, this.element)
     private readonly loader: TextureLoader = new TextureLoader()
 
     private readonly sphere: SphereImage = new SphereImage()
-    private arrows: PointArrow[]
+    private arrows: PointArrow[] = []
 
     private panoramaPoint: any
 
@@ -48,6 +53,18 @@ export class PanoramaViewer {
         this.controls.zoomSpeed = 2
 		this.controls.rotateSpeed = 0.5
 
+        this.window.addEventListener('click', (event: MouseEvent) => {
+            this.mouse.x = ( event.clientX / this.renderer.domElement.clientWidth ) * 2 - 1;
+            this.mouse.y = - ( event.clientY / this.renderer.domElement.clientHeight ) * 2 + 1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera)
+            console.log(this.mouse)
+            console.log(this.raycaster.intersectObjects(
+                this.frontScene.children, true
+                //this.arrows.map((elem) => elem.mesh)
+                ))
+        })
+
         this.scene.add(this.camera)
         this.scene.add(this.sphere.mesh)
         this.animate()
@@ -58,21 +75,20 @@ export class PanoramaViewer {
         if (!response.ok){
             return
         }
+        var connections = await response.json()
+        for (let i = 0; i < connections.length; i++){
+            if (connections[i].point2 == pointID){
+                connections[i].point2 = connections[i].point1
+                connections[i].point1 = pointID
+            }
+            var point =await new Point(connections[i].point2).parsePoint()
+            var arrow = new PointArrow(point)
+            var normalizedPosition = arrow.pointVector.normalize().multiplyScalar(5)
+            arrow.mesh.position.set(normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
+            this.frontScene.add(arrow.mesh) 
+            this.arrows.push(arrow)
+        }
         console.log(this.arrows)
-
-        var pointArrow = new PointArrow()
-        this.frontScene.add(pointArrow.mesh)
-        var pointArrow2 = new PointArrow()
-        this.frontScene.add(pointArrow2.mesh)
-        
-        var farness = 3.7
-        pointArrow.mesh.position.set(farness, -1, farness)
-        pointArrow2.mesh.position.set(farness, -1, 0)
-        // var point = new Vector3(300, -500 ,300)
-        // pointArrow.mesh.lookAt(point)
-        //var angle = this.scene.position.angleTo(pointArrow.mesh.position)
-        pointArrow.mesh.rotation.setFromVector3(this.scene.position.multiplyScalar(-1))
-        pointArrow.mesh.rotateX(Math.PI / 2)
     }
 
     public setSize(width: number, height: number){
@@ -90,18 +106,15 @@ export class PanoramaViewer {
     }
 
     public async setPoint(_pointID: number | string){
-        var response = await fetch(`http://localhost:3000/panoramas`)
+        var response = await fetch(`http://localhost:3000/panoramas/${1}`)
         if (!response.ok){
             return
         }
-        var pointData = (await response.json())[0]
+        var pointData = await response.json()
         this.panoramaPoint = pointData
         console.log(this.panoramaPoint)
         this.setImage(pointData.imagePath)
-
-
-        
-
+        this.addArrows(pointData.id)
     }
 
     private render(): void{
@@ -117,4 +130,6 @@ export class PanoramaViewer {
         this.controls.update()
         this.render()
     }
+    
+    
 }

@@ -14,6 +14,13 @@ router.get('/', async (_request: Request, response: Response) => {
   response.json(panoramas)
 });
 
+router.get('/:id', async  (request: Request, response: Response) => {
+  const id = Number.parseInt(request.params.id)
+  const point = await AppDataSource.manager.getRepository(Panorama).findOneBy({id: id})
+  console.log(point)
+  response.json(point)
+})
+
 router.get('/connections/:id', async (request: Request, response: Response) => {
   const id = Number.parseInt(request.params.id)
   const findOptions: FindOneOptions<PointConnection> = {
