@@ -6,11 +6,14 @@ import {
     Color,
 Raycaster,
 Vector2,
+Vector3
 } from "three"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
 import { PointArrow } from "./PointArrow"
 import { Point } from "./Point"
+import { ZoomControl } from "./ZoomControl"
+import { CanvasControl } from "./CanvasControl"
 
 export class PanoramaViewer {
     private _width: number = 0
@@ -26,15 +29,17 @@ export class PanoramaViewer {
     private readonly scene: Scene = new Scene()
     private readonly frontScene: Scene = new Scene()
     private readonly camera: PerspectiveCamera = new PerspectiveCamera()
-    private readonly mouse: Vector2 = new Vector2()
+    private readonly zoomControl: ZoomControl = new ZoomControl(this.camera)
     private readonly raycaster: Raycaster = new Raycaster()
     private readonly controls: OrbitControls = new OrbitControls(this.camera, this.element)
     private readonly loader: TextureLoader = new TextureLoader()
 
     private readonly sphere: SphereImage = new SphereImage()
     private arrows: PointArrow[] = []
+    private clickable: boolean = true
+    private caughtArrows: PointArrow[] = []
 
-    private panoramaPoint: any
+    private panoramaPoint: Point
 
     public get element() : HTMLCanvasElement {
         return this.renderer.domElement
@@ -46,34 +51,76 @@ export class PanoramaViewer {
         this.renderer.setClearColor(new Color(0x500000))
         this.renderer.autoClear = false;
 
-        this.camera.fov = 20
-        this.camera.position.z = -20
-        this.controls.minDistance = 0.1
-		this.controls.maxDistance = 13
+        this.camera.fov = 80
+        this.zoomControl.canvas = this.element
+        this.zoomControl.zoom = 50
+        this.zoomControl.maxZoom = 100
+        this.zoomControl.minZoom = 10
+        //this.camera.position.z = -20
+        this.controls.minDistance = 1
+		this.controls.maxDistance = 1
         this.controls.zoomSpeed = 2
 		this.controls.rotateSpeed = 0.5
-
-        this.window.addEventListener('click', (event: MouseEvent) => {
-            this.mouse.x = ( event.clientX / this.renderer.domElement.clientWidth ) * 2 - 1;
-            this.mouse.y = - ( event.clientY / this.renderer.domElement.clientHeight ) * 2 + 1;
-
-            this.raycaster.setFromCamera(this.mouse, this.camera)
-            console.log(this.mouse)
-            console.log(this.raycaster.intersectObjects(
-                this.frontScene.children, true
-                //this.arrows.map((elem) => elem.mesh)
-                ))
-        })
-
+        const targetContorPoint = new Vector3(0, 0, Math.PI / 2)
+        this.controls.target = targetContorPoint
+        this.camera.lookAt(targetContorPoint)
         this.scene.add(this.camera)
         this.scene.add(this.sphere.mesh)
         this.animate()
+
+
+        this.window.addEventListener('click', (event: MouseEvent) => {
+            if (this.clickable == false){
+                return
+            }
+            const canvasPoint = CanvasControl.getCanvasPoint(new Vector2(event.pageX, event.pageY), this.element)
+            if (!CanvasControl.isCanvasPointValid(new Vector2(event.pageX, event.pageY), this.element)){
+                    return
+            }
+            this.raycaster.setFromCamera(canvasPoint, this.camera)
+            const rayIntersections =this.raycaster.intersectObjects(this.arrows.map((elem) => elem.mesh)) 
+            const arrow = this.arrows.find((elem) => elem.mesh.id == rayIntersections.at(0)?.object.id)
+            if (arrow){
+                this.setPoint(arrow.point.id)       
+            }
+        })
+        this.window.addEventListener('mousemove', (event: MouseEvent) => {
+            const canvasPoint = CanvasControl.getCanvasPoint(new Vector2(event.pageX, event.pageY), this.element)
+            if (!CanvasControl.isCanvasPointValid(new Vector2(event.pageX, event.pageY), this.element)){
+                    return
+            }
+            this.raycaster.setFromCamera(canvasPoint, this.camera)
+            const rayIntersections =this.raycaster.intersectObjects(this.arrows.map((elem) => elem.mesh)) 
+            this.caughtArrows = this.arrows.filter((elem) => elem.mesh.id == rayIntersections.at(0)?.object.id)
+            for (let i = 0; i < this.arrows.length; i++){
+                if (this.caughtArrows.includes(this.arrows[i])){
+                    this.arrows[i].isPointOver = true
+                } else{
+                    this.arrows[i].isPointOver = false
+                }
+            }
+        })
+        this.window.addEventListener('mousedown', (_e) => {
+            this.clickable = true
+        })
+        this.window.addEventListener('mousemove', (_e) => {
+            if (this.clickable == true){
+                this.clickable = false
+            }
+        })
     }
+
 
     public async addArrows(pointID: number | string){
         var response = await fetch(`http://localhost:3000/panoramas/connections/${pointID}`)
         if (!response.ok){
             return
+        }
+        if (this.arrows.length != 0){
+            for (let i = 0; i < this.arrows.length; i++){
+                this.frontScene.remove(this.arrows[i].mesh)
+            }
+            this.arrows.length = 0
         }
         var connections = await response.json()
         for (let i = 0; i < connections.length; i++){
@@ -88,7 +135,6 @@ export class PanoramaViewer {
             this.frontScene.add(arrow.mesh) 
             this.arrows.push(arrow)
         }
-        console.log(this.arrows)
     }
 
     public setSize(width: number, height: number){
@@ -105,22 +151,17 @@ export class PanoramaViewer {
         this.render()
     }
 
-    public async setPoint(_pointID: number | string){
-        var response = await fetch(`http://localhost:3000/panoramas/${1}`)
-        if (!response.ok){
-            return
-        }
-        var pointData = await response.json()
-        this.panoramaPoint = pointData
-        console.log(this.panoramaPoint)
-        this.setImage(pointData.imagePath)
-        this.addArrows(pointData.id)
+    public async setPoint(_pointID: number){
+        const point = await new Point(_pointID).parsePoint()
+        this.panoramaPoint = point
+        this.setImage(this.panoramaPoint.imagePath)
+        this.addArrows(this.panoramaPoint.id)
     }
 
     private render(): void{
-        this.renderer.clear()
+        //this.renderer.clear()
         this.renderer.render(this.scene, this.camera)
-        this.renderer.clearDepth()
+        //this.renderer.clearDepth()
         this.renderer.render(this.frontScene, this.camera)
     }
 
@@ -130,6 +171,7 @@ export class PanoramaViewer {
         this.controls.update()
         this.render()
     }
+    
     
     
 }

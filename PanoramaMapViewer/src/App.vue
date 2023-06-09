@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import PanaromaViewer from './components/PanaromaViewer.vue';
+
+// const panaramaWidth = 900
+// const panaramaHeight = 600
 </script>
 
 <template>
-  <PanaromaViewer />
+  <PanaromaViewer :width="1200" :height="600"></PanaromaViewer>
 </template>
 
 <style scoped>

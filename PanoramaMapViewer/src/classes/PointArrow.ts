@@ -1,7 +1,7 @@
 //import 'reflect-metadata';
 //import { plainToClass } from 'class-transformer';
 
-import { SphereGeometry, Mesh, MeshBasicMaterial, Vector3 } from "three";
+import { SphereGeometry, Mesh, MeshBasicMaterial, Vector3, Color } from "three";
 import { Point } from "./Point";
 
 
@@ -9,10 +9,26 @@ export class PointArrow{
     public readonly mesh: Mesh<SphereGeometry, MeshBasicMaterial> = new Mesh();
     public point: Point
     public pointVector: Vector3
+    private _isPointOver: boolean = false
+    public get isPointOver(){
+        return this._isPointOver
+    }
+    public set isPointOver(value: boolean){
+        if (this._isPointOver == value){
+            return
+        }
+        this._isPointOver = value
+        if (value == true){
+            this.mesh.material.color = this.mesh.material.color.add(new Color("#444444"))
+            return
+        }
+        this.mesh.material.color = this.mesh.material.color.sub(new Color("#444444"))
+        
+    }
     constructor(point: Point){
         this.mesh.geometry = new SphereGeometry(1)
         this.mesh.geometry.scale(0.5,0.5,0.5)
-        this.mesh.material = new MeshBasicMaterial({color: "#336666"})
+        this.mesh.material = new MeshBasicMaterial({color: "#337777"})
 
         this.point = point
 

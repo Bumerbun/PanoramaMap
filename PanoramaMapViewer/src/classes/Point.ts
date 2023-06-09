@@ -26,7 +26,6 @@ export class Point{
                 (this as any)[`${properties[i]}`] = point[properties[i]]
             }
         }
-        console.log(this)
         return this
     }
 }

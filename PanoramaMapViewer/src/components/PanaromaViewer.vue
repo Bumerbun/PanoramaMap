@@ -1,6 +1,5 @@
 
 <template>
-    <h1> Test </h1>
     <div id="threejs-container"></div>
 </template>
 
@@ -8,11 +7,22 @@
 import { PanoramaViewer } from '../classes/PanoramaViewer';
 
 export default {
+  props: {
+    width: Number,
+    height: Number
+  },
   mounted() {
-    var viewer = new PanoramaViewer(800, 600, window);
+    const element = document.getElementById("threejs-container")
+    if (!element){
+      return
+    }
+    
+    console.log(element.getBoundingClientRect())
+    var viewer = new PanoramaViewer(this.width??1200, this.height??600, window)
     viewer.setPoint(1)
-    document.getElementById("threejs-container")?.appendChild(viewer.element)
+    element.appendChild(viewer.element)
   }
+  
 }
 
 </script>
