@@ -4,8 +4,8 @@ import * as createError from "http-errors"
 import { HttpError } from "http-errors";
 import * as logger from "morgan"
 
-var indexRouter = require('./routes/index');
-var panoramaRouter = require('./routes/panoramas');
+const indexRouter = require('./routes/index');
+const panoramaRouter = require('./routes/panoramas');
 
 var app = express.default();
 
@@ -22,6 +22,7 @@ app.use('/static', express.static('./public'));
 
 app.use('/', indexRouter);
 app.use('/panoramas', panoramaRouter);
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

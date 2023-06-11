@@ -2,10 +2,11 @@ import {Color, PerspectiveCamera, Scene, WebGLRenderer } from "three"
 //import { ZoomControl } from "./ZoomControl"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { PointArrow } from "./PointArrow"
+import { Point } from "./Point"
 
 
 
-export class buildingPreview{
+export class BuildingPreview{
     private window: Window
     private readonly renderer: WebGLRenderer = new WebGLRenderer()
     private readonly scene: Scene = new Scene()
@@ -18,24 +19,31 @@ export class buildingPreview{
     }
     private readonly points: PointArrow[] = []
 
-    public constructor(window: Window, connectedCamera: PerspectiveCamera){
+    public constructor(width:number, height: number, window: Window, connectedCamera: PerspectiveCamera){
         this.window = window
         this.connectedCamera = connectedCamera
+        this.renderer.setSize(width, height)
         this.renderer.setClearColor(new Color(0x500000))
         this.renderer.autoClear = false;
         this.camera.position.z = -100
         this.scene.add(this.camera)
+
+        this.animate()
     }
 
     public async setPoints(){
-        var response = await fetch(`http://localhost:3000/panoramas`)
+        var response = await fetch(`http://localhost:3000/panoramas/columns?columnname=id`)
         if (!response.ok){
             return
         }
-        var pointsData = 
-
-
-
+        var pointids = await response.json()
+        for (let i = 0; i < pointids.length; i++){
+            const point = await new Point(pointids.at(i).panorama_id).parsePoint()
+            const arrow = new PointArrow(point)
+            arrow.mesh.position.set(point.x, point.y, point.z)
+            this.points.push(arrow)
+            this.scene.add(arrow.mesh)
+        }
     }
 
 

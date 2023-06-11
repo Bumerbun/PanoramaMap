@@ -15,7 +15,7 @@ export class Point{
     }
 
     public async parsePoint():Promise<Point>{
-        const response = await fetch(`http://localhost:3000/panoramas/${this.id}`)
+        const response = await fetch(`http://localhost:3000/panoramas/one/${this.id}`)
         if (!response.ok){
             throw new Error("panorama fetch fail")
         }

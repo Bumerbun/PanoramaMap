@@ -1,11 +1,12 @@
 
 <template>
     <div id="threejs-container"></div>
+    <div id="buildingpreview"></div>
 </template>
 
 <script lang="ts">
 import { PanoramaViewer } from '../classes/PanoramaViewer';
-
+import { BuildingPreview } from '../classes/BuildingPreview';
 export default {
   props: {
     width: Number,
@@ -21,6 +22,12 @@ export default {
     var viewer = new PanoramaViewer(this.width??1200, this.height??600, window)
     viewer.setPoint(1)
     element.appendChild(viewer.element)
+
+    const elem2 = document.getElementById("buildingpreview")
+    var preview = new BuildingPreview(this.width??1200, this.height??600, window, viewer.camera)
+    preview.setPoints()
+    elem2?.appendChild(preview.element)
+    console.log(preview)
   }
   
 }

@@ -28,7 +28,7 @@ export class PanoramaViewer {
     private readonly renderer: WebGLRenderer = new WebGLRenderer()
     private readonly scene: Scene = new Scene()
     private readonly frontScene: Scene = new Scene()
-    private readonly camera: PerspectiveCamera = new PerspectiveCamera()
+    public readonly camera: PerspectiveCamera = new PerspectiveCamera()
     private readonly zoomControl: ZoomControl = new ZoomControl(this.camera)
     private readonly raycaster: Raycaster = new Raycaster()
     private readonly controls: OrbitControls = new OrbitControls(this.camera, this.element)
