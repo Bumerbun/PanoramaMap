@@ -6,7 +6,6 @@ import { Equal, FindOneOptions, FindOptionsWhere } from "typeorm";
 
 var router = Router();
 
-/* GET users listing. */
 router.get('/', async (_request: Request, response: Response) => {
   var panoramas = await AppDataSource.manager
     .getRepository(Panorama)
@@ -36,5 +35,10 @@ router.get('/connections/:id', async (request: Request, response: Response) => {
   console.log(connections)
   response.json(connections)
 })
+
+// router.get('/column/:columnName' async (request: Request, response: Response) => {
+//   const columnName = request.params.columnName
+//   AppDataSource.getRepository(Panorama)
+// })
 module.exports = router;
   

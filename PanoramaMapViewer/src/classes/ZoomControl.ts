@@ -11,9 +11,10 @@ export class ZoomControl{
         this._zoom = value
         this.camera.fov = value
     }
-    maxZoom: number
-    minZoom: number
-    zoomSpeed: number = 1
+    public maxZoom: number
+    public minZoom: number
+    public zoomSpeed: number = 1
+    public isEnabled: boolean = true
     public canvas?: HTMLCanvasElement
     private camera: PerspectiveCamera
     
@@ -26,6 +27,9 @@ export class ZoomControl{
         }
 
         window.addEventListener("wheel", (event: WheelEvent) => {
+            if (!this.isEnabled){
+                return
+            }
             const tempZoom = this.zoom + (event.deltaY / (100 / this.zoomSpeed))
             var isPointValid = true
             if (this.canvas)

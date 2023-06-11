@@ -1,5 +1,3 @@
-//import 'reflect-metadata';
-//import { plainToClass } from 'class-transformer';
 
 import { SphereGeometry, Mesh, MeshBasicMaterial, Vector3, Color } from "three";
 import { Point } from "./Point";
@@ -27,8 +25,8 @@ export class PointArrow{
     }
     constructor(point: Point){
         this.mesh.geometry = new SphereGeometry(1)
-        this.mesh.geometry.scale(0.5,0.5,0.5)
-        this.mesh.material = new MeshBasicMaterial({color: "#337777"})
+        this.mesh.geometry.scale(0.3,0.3,0.3)
+        this.mesh.material = new MeshBasicMaterial({color: "#772222"})
 
         this.point = point
 

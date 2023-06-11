@@ -28,4 +28,12 @@ export class Point{
         }
         return this
     }
+
+    public async getAllPoints(){
+        const response = await fetch(`http://localhost:3000/panoramas/`)
+        if (!response.ok){
+            throw new Error("panorama fetch fail")
+        }
+
+    }
 }

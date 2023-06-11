@@ -146,7 +146,9 @@ export class PanoramaViewer {
     }
 
     public setImage(imagePath : string){
-        var texture = this.loader.load(`http://localhost:3000/static/images/${imagePath}` ,() => this.render())
+        var texture = this.loader.load(`http://localhost:3000/static/images/${imagePath}` ,
+            () => this.render()
+        )
         this.sphere.texture = texture
         this.render()
     }
