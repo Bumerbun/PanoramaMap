@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, JoinTable, OneToOne} from "typeorm"
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, JoinTable, OneToOne, OneToMany} from "typeorm"
 import { PointType } from "./PointType";
+import { PointConnection } from "./PointConnection";
 
 @Entity()
 export class Point{
@@ -19,4 +20,9 @@ export class Point{
 
     @Column({name: "z", nullable: false})
     z: number
+
+
+    @OneToMany(() => PointConnection, (pConnection) => pConnection.point1)
+    pointConnections: PointConnection[]
+
 }

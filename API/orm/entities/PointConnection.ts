@@ -1,17 +1,20 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm"
+import { Check, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm"
+import { PanoramaPoint } from "./PanoramaPoint";
 import { Point } from "./Point";
-import { Panorama } from "./Panorama";
 
 @Entity()
+@Check('"point1" != "point2"')
+@Unique(["point1", "point2"])
 export class PointConnection{
+    
+    @PrimaryGeneratedColumn()
+    id: number
+    
+    @ManyToOne(() => Point, (point) => point.id, {nullable: false})
+    @JoinColumn({name: "point1"})
+    point1: PanoramaPoint
 
-    @ManyToOne(() => Panorama, (panorama) => panorama.id)
-    @PrimaryColumn({type:"int"})
-    @JoinColumn()
-    point1: Point
-
-    @ManyToOne(() => Panorama, (panorama) => panorama.id)
-    @PrimaryColumn({type:"int"})
-    @JoinColumn()
-    point2: Point
+    @ManyToOne(() => Point, (point) => point.id, {nullable: false})
+    @JoinColumn({name: "point2"})
+    point2: PanoramaPoint
 }

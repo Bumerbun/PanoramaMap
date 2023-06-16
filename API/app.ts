@@ -6,6 +6,7 @@ import * as logger from "morgan"
 
 const indexRouter = require('./routes/index');
 const panoramaRouter = require('./routes/panoramas');
+const pointRouter = require('./routes/point')
 
 var app = express.default();
 
@@ -22,6 +23,7 @@ app.use('/static', express.static('./public'));
 
 app.use('/', indexRouter);
 app.use('/panoramas', panoramaRouter);
+app.use('/points', pointRouter);
 
 
 // catch 404 and forward to error handler

@@ -1,41 +1,46 @@
 import {NextFunction, Request, Response, Router} from "express"
 import AppDataSource from "../orm/data-source";
-import { Panorama } from "../orm/entities/Panorama";
-import { PointConnection } from "../orm/entities/PointConnection";
-import { Equal, FindOneOptions, FindOptionsWhere } from "typeorm";
+import { PanoramaPoint } from "../orm/entities/PanoramaPoint";
 
 var router = Router();
 
-router.get('/', async (_request: Request, response: Response) => {
-  var panoramas = await AppDataSource.manager
-    .getRepository(Panorama)
-    .find({relations:{ptype:true}})
+router.get('/', async (request: Request, response: Response) => {
+  const pointrelation =  Boolean(Number(request.query.point))
+  const connectionsrelation =  Boolean(Number(request.query.connections))  
+  
+  const panoramas = await AppDataSource.manager
+    .getRepository(PanoramaPoint)
+    .find({relations:{
+      point: !pointrelation ? pointrelation : {pointConnections: !connectionsrelation ? connectionsrelation : {point2: connectionsrelation}}}})
   response.json(panoramas)
 });
 
 router.get('/one/:id', async  (request: Request, response: Response, next: NextFunction) => {
-  
   const id = Number.parseInt(request.params.id)
   if (!id){
     return next("invalid request")
-  }
-  const point = await AppDataSource.manager.getRepository(Panorama).findOneBy({id: id})
+  }id
+  const pointrelation =  Boolean(Number(request.query.point))
+  const connectionsrelation =  Boolean(Number(request.query.connections))  
+  const point = await AppDataSource.manager.getRepository(PanoramaPoint)
+    .findOne({
+      where: {id: id},
+      relations: {
+        point: !pointrelation ? pointrelation : {pointConnections: !connectionsrelation ? connectionsrelation : {point2: connectionsrelation}}
+  }})
   console.log(point)
   response.json(point)
 })
 
 router.get('/connections/:id', async (request: Request, response: Response) => {
+  const pointrelation =  Boolean(Number(request.query.point))
   const id = Number.parseInt(request.params.id)
-  const findOptions: FindOneOptions<PointConnection> = {
-    where: [
-      {point1: id},
-      {point2: id}] as FindOptionsWhere<PointConnection>,
-  };
-  console.log(id)
-  console.log(findOptions)
-  console.log(await AppDataSource.manager.getRepository(PointConnection))
-  const connections = await AppDataSource.manager.getRepository(PointConnection)
-  .find(findOptions)
+  var panoramapoints = await AppDataSource.manager.getRepository(PanoramaPoint)
+  .find({
+    where:{id: id}, 
+    relations: {point: {pointConnections: {point2: pointrelation} }}
+  })
+  var connections = panoramapoints.map(x => x.point.pointConnections.map(x => x.point2))
   console.log(connections)
   response.json(connections)
 })
@@ -53,7 +58,7 @@ router.get('/columns', async (request: Request, response: Response, next: NextFu
     return
   }
   try{
-    const result = await AppDataSource.manager.getRepository(Panorama).createQueryBuilder("panorama")
+    const result = await AppDataSource.manager.getRepository(PanoramaPoint).createQueryBuilder("panorama")
       .select(querycolumns)
       .getRawMany()
     response.json(result)

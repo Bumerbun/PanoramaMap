@@ -11,7 +11,7 @@ Vector3
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
 import { PointArrow } from "./PointArrow"
-import { Point } from "./Point"
+import { Point } from "./api/Point"
 import { ZoomControl } from "./ZoomControl"
 import { CanvasControl } from "./CanvasControl"
 
@@ -61,6 +61,7 @@ export class PanoramaViewer {
 		this.controls.maxDistance = 1
         this.controls.zoomSpeed = 2
 		this.controls.rotateSpeed = 0.5
+        this.controls.enablePan = false;
         const targetContorPoint = new Vector3(0, 0, Math.PI / 2)
         this.controls.target = targetContorPoint
         this.camera.lookAt(targetContorPoint)
@@ -112,7 +113,7 @@ export class PanoramaViewer {
 
 
     public async addArrows(pointID: number | string){
-        var response = await fetch(`http://localhost:3000/panoramas/connections/${pointID}`)
+        var response = await fetch(`http://localhost:3000/panoramas/one/${pointID}?point=1&connections=1`)
         if (!response.ok){
             return
         }
@@ -122,16 +123,14 @@ export class PanoramaViewer {
             }
             this.arrows.length = 0
         }
-        var connections = await response.json()
+        var connections = (await response.json()).point.pointConnections
+        console.log(connections)
         for (let i = 0; i < connections.length; i++){
-            if (connections[i].point2 == pointID){
-                connections[i].point2 = connections[i].point1
-                connections[i].point1 = pointID
-            }
-            var point =await new Point(connections[i].point2).parsePoint()
+            var point = new Point({json: connections[i].point2})
             var arrow = new PointArrow(point)
             var normalizedPosition = arrow.pointVector.normalize().multiplyScalar(5)
             arrow.mesh.position.set(normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
+            console.log(arrow.mesh)
             this.frontScene.add(arrow.mesh) 
             this.arrows.push(arrow)
         }
@@ -153,8 +152,8 @@ export class PanoramaViewer {
         this.render()
     }
 
-    public async setPoint(_pointID: number){
-        const point = await new Point(_pointID).parsePoint()
+    public async setPoint(pointID: number){
+        const point = await new Point({pointId: pointID}).parsePoint()
         this.panoramaPoint = point
         this.setImage(this.panoramaPoint.imagePath)
         this.addArrows(this.panoramaPoint.id)

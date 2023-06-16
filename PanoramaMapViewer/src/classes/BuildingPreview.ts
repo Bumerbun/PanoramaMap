@@ -2,7 +2,7 @@ import {Color, PerspectiveCamera, Scene, WebGLRenderer } from "three"
 //import { ZoomControl } from "./ZoomControl"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { PointArrow } from "./PointArrow"
-import { Point } from "./Point"
+import { Point } from "./api/Point"
 
 
 
@@ -37,8 +37,9 @@ export class BuildingPreview{
             return
         }
         var pointids = await response.json()
+        console.log(pointids)
         for (let i = 0; i < pointids.length; i++){
-            const point = await new Point(pointids.at(i).panorama_id).parsePoint()
+            const point = await new Point({pointId: pointids.at(i).panorama_id}).parsePoint()
             const arrow = new PointArrow(point)
             arrow.mesh.position.set(point.x, point.y, point.z)
             this.points.push(arrow)

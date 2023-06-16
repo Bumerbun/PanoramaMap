@@ -1,9 +1,11 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { Panorama } from "./entities/Panorama"
+import { PanoramaPoint } from "./entities/PanoramaPoint"
 import { Point } from "./entities/Point"
 import { PointConnection } from "./entities/PointConnection"
 import { PointType } from "./entities/PointType"
+import { Room } from "./entities/Room"
+import { RoomPoint } from "./entities/RoomPoint"
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -11,7 +13,8 @@ const AppDataSource = new DataSource({
     port: 5432,
     username: "main",
     database: "PanoramaMap",
-    entities: [Panorama, Point, PointConnection, PointType],
+    entities: [PanoramaPoint, Point, PointConnection, PointType, Room, RoomPoint],
+    schema: "testing",
     synchronize: true
 })
 AppDataSource.initialize()
