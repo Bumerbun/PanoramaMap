@@ -41,7 +41,7 @@ export class BuildingPreview{
         for (let i = 0; i < pointids.length; i++){
             const point = await new Point({pointId: pointids.at(i).panorama_id}).parsePoint()
             const arrow = new PointArrow(point)
-            arrow.mesh.position.set(point.x, point.y, point.z)
+            arrow.mesh.position.set(-point.x, point.y, point.z)
             this.points.push(arrow)
             this.scene.add(arrow.mesh)
         }

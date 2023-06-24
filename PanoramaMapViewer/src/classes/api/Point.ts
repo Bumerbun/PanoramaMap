@@ -1,3 +1,4 @@
+import { Vector3 } from "three";
 import { ObjectParser } from "../ObjectParser";
 
 interface IPoint {
@@ -11,8 +12,13 @@ export class Point{
     y: number
     z: number
     imagePath: string
+    imageRotation: number
     pointName: string
     description: string
+
+    public get position(){
+        return new Vector3(this.x, this.y, this.z)
+    }
 
     constructor({pointId, json}: IPoint){
         if (pointId){

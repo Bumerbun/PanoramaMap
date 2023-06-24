@@ -26,7 +26,8 @@ export class PointArrow{
     constructor(point: Point){
         this.mesh.geometry = new SphereGeometry(1)
         this.mesh.geometry.scale(0.3,0.3,0.3)
-        this.mesh.material = new MeshBasicMaterial({color: "#772222"})
+        this.mesh.material = new MeshBasicMaterial({color: "#772222", depthTest: false})
+        this.mesh.renderOrder = 999;
 
         this.point = point
         this.pointVector = new Vector3(point.x, point.y, point.z)

@@ -12,13 +12,13 @@ export class Point{
     @JoinColumn({ name:"ptype"})
     ptype: PointType
 
-    @Column({name: "x", nullable: false})
+    @Column("decimal", {scale: 2, name: "x", nullable: false})
     x: number
 
-    @Column({name: "y", nullable: false})
+    @Column("decimal", {scale: 2, name: "y", nullable: false})
     y: number
 
-    @Column({name: "z", nullable: false})
+    @Column("decimal", {scale: 2, name: "z", nullable: false})
     z: number
 
 

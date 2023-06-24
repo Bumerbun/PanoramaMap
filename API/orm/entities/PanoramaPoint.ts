@@ -9,7 +9,10 @@ export class PanoramaPoint{
     id: number
 
     @Column({name: "imagepath", nullable: false})
-    imagePath!: string
+    imagePath: string
+
+    @Column("decimal", {scale:2, name: "imagerotation", nullable: false})
+    imageRotation: number 
 
     @Column({
         type: "varchar",

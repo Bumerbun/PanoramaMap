@@ -56,15 +56,16 @@ export class PanoramaViewer {
         this.zoomControl.zoom = 50
         this.zoomControl.maxZoom = 100
         this.zoomControl.minZoom = 10
-        //this.camera.position.z = -20
-        this.controls.minDistance = 1
-		this.controls.maxDistance = 1
+        this.camera.position.z = 0
+        this.controls.minDistance = 0.1
+		this.controls.maxDistance = 0.1
+        this.controls.enableZoom = true
         this.controls.zoomSpeed = 2
 		this.controls.rotateSpeed = 0.5
-        this.controls.enablePan = false;
-        const targetContorPoint = new Vector3(0, 0, Math.PI / 2)
+        //this.controls.enablePan = false;
+        const targetContorPoint = new Vector3(0, 0, 0.001)
         this.controls.target = targetContorPoint
-        this.camera.lookAt(targetContorPoint)
+        // this.camera.lookAt(targetContorPoint)
         this.scene.add(this.camera)
         this.scene.add(this.sphere.mesh)
         this.animate()
@@ -124,13 +125,12 @@ export class PanoramaViewer {
             this.arrows.length = 0
         }
         var connections = (await response.json()).point.pointConnections
-        console.log(connections)
         for (let i = 0; i < connections.length; i++){
             var point = new Point({json: connections[i].point2})
             var arrow = new PointArrow(point)
-            var normalizedPosition = arrow.pointVector.normalize().multiplyScalar(5)
-            arrow.mesh.position.set(normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
-            console.log(arrow.mesh)
+            var normalizedPosition = arrow.pointVector.sub(this.panoramaPoint.position)//.normalize().multiplyScalar(5)
+            console.log(normalizedPosition)
+            arrow.mesh.position.set(-normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
             this.frontScene.add(arrow.mesh) 
             this.arrows.push(arrow)
         }
@@ -155,15 +155,17 @@ export class PanoramaViewer {
     public async setPoint(pointID: number){
         const point = await new Point({pointId: pointID}).parsePoint()
         this.panoramaPoint = point
-        this.setImage(this.panoramaPoint.imagePath)
+        console.log(point)
+        this.sphere.mesh.rotateY((Math.PI / 180) * point.imageRotation)
+        this.setImage(this.panoramaPoint.imagePath)    
         this.addArrows(this.panoramaPoint.id)
     }
 
     private render(): void{
         //this.renderer.clear()
         this.renderer.render(this.scene, this.camera)
-        //this.renderer.clearDepth()
         this.renderer.render(this.frontScene, this.camera)
+        //this.renderer.clearDepth()
     }
 
     private animate(): void{
