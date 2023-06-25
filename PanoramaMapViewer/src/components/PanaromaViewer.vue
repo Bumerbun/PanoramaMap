@@ -5,8 +5,8 @@
 </template>
 
 <script lang="ts">
-import { PanoramaViewer } from '../classes/PanoramaViewer';
-import { BuildingPreview } from '../classes/BuildingPreview';
+import { PanoramaViewer } from '../scripts/components/PanoramaViewer';
+import { BuildingPreview } from '../scripts/components/BuildingPreview';
 export default {
   props: {
     width: Number,

@@ -11,9 +11,9 @@ Vector3
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
 import { PointArrow } from "./PointArrow"
-import { Point } from "./api/Point"
-import { ZoomControl } from "./ZoomControl"
-import { CanvasControl } from "./CanvasControl"
+import { Point } from "../api/Point"
+import { ZoomControl } from "./controls/ZoomControl"
+import { CanvasControl } from "./controls/CanvasControl"
 
 export class PanoramaViewer {
     private _width: number = 0
@@ -126,7 +126,7 @@ export class PanoramaViewer {
         }
         var connections = (await response.json()).point.pointConnections
         for (let i = 0; i < connections.length; i++){
-            var point = new Point({json: connections[i].point2})
+            var point = Point.fromJson(connections[i].point2)
             var arrow = new PointArrow(point)
             var normalizedPosition = arrow.pointVector.sub(this.panoramaPoint.position)//.normalize().multiplyScalar(5)
             console.log(normalizedPosition)
@@ -153,10 +153,10 @@ export class PanoramaViewer {
     }
 
     public async setPoint(pointID: number){
-        const point = await new Point({pointId: pointID}).parsePoint()
+        const point = await new Point(pointID).parse()
         this.panoramaPoint = point
         console.log(point)
-        this.sphere.mesh.rotateY((Math.PI / 180) * point.imageRotation)
+        this.sphere.mesh.rotation.set(0, (Math.PI / 180) * point.imageRotation, 0)
         this.setImage(this.panoramaPoint.imagePath)    
         this.addArrows(this.panoramaPoint.id)
     }

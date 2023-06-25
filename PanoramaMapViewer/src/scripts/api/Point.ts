@@ -20,16 +20,15 @@ export class Point{
         return new Vector3(this.x, this.y, this.z)
     }
 
-    constructor({pointId, json}: IPoint){
-        if (pointId){
-            this.id = pointId
-        }
+    constructor(pointId: number, {json}: IPoint = {}){
+        this.id = pointId
+
         if (json){
             ObjectParser.fillFromJson(this, json)
         }
     }
 
-    public async parsePoint():Promise<Point>{
+    public async parse():Promise<Point>{
         const response = await fetch(`http://localhost:3000/panoramas/one/${this.id}?point=1`)
         if (!response.ok){
             throw new Error("panorama fetch fail")
@@ -42,11 +41,18 @@ export class Point{
         return this
     }
 
-    public async getAllPoints(){
+    public static fromJson(json : any){
+        return new Point(0, {json: json})
+    }
+
+    public static async getAll(){
         const response = await fetch(`http://localhost:3000/panoramas/`)
         if (!response.ok){
             throw new Error("panorama fetch fail")
         }
-
+        var pointids = (await response.json()) as any[]
+        console.log(pointids)
+        const points = await Promise.all(pointids.map(async (item) => await new Point(item.panorama_id).parse())) 
+        return points
     }
 }

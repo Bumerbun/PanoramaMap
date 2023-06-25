@@ -20,6 +20,6 @@ export class Room{
         nullable: true})
     description: string | null;
 
-    @OneToMany(() => RoomPoint, (rpoint) => rpoint.id)
+    @OneToMany(() => RoomPoint, (rpoint) => rpoint.room)
     roompoints: RoomPoint[]
 }

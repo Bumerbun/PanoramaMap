@@ -1,6 +1,6 @@
 
 import { SphereGeometry, Mesh, MeshBasicMaterial, Vector3, Color } from "three";
-import { Point } from "./api/Point";
+import { Point } from "../api/Point";
 
 
 export class PointArrow{
