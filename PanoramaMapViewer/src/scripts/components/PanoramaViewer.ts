@@ -4,40 +4,29 @@ import {
     PerspectiveCamera, 
     TextureLoader, 
     Color,
-Raycaster,
-Vector2,
-Vector3
+    Vector3
 } from "three"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
-import { PointArrow } from "./PointArrow"
+import { PointObject } from "./PointObject"
 import { Point } from "../api/Point"
 import { ZoomControl } from "./controls/ZoomControl"
 import { CanvasControl } from "./controls/CanvasControl"
 
 export class PanoramaViewer {
-    private _width: number = 0
-    public get width() : number {
-        return this._width
-    }
-    private _height: number = 0
-    public get height() : number {
-        return this._height
-    }
     private window: Window
     private readonly renderer: WebGLRenderer = new WebGLRenderer()
     private readonly scene: Scene = new Scene()
     private readonly frontScene: Scene = new Scene()
     public readonly camera: PerspectiveCamera = new PerspectiveCamera()
-    private readonly zoomControl: ZoomControl = new ZoomControl(this.camera)
-    private readonly raycaster: Raycaster = new Raycaster()
+    public readonly canvasControl: CanvasControl = new CanvasControl(this.element, this.element)
+    public readonly zoomControl: ZoomControl = new ZoomControl(this.camera, this.canvasControl)
     private readonly controls: OrbitControls = new OrbitControls(this.camera, this.element)
     private readonly loader: TextureLoader = new TextureLoader()
 
     private readonly sphere: SphereImage = new SphereImage()
-    private arrows: PointArrow[] = []
+    private arrows: PointObject[] = []
     private clickable: boolean = true
-    private caughtArrows: PointArrow[] = []
 
     private panoramaPoint: Point
 
@@ -45,14 +34,16 @@ export class PanoramaViewer {
         return this.renderer.domElement
     }
 
-    constructor(width: number, height: number, window: Window){
-        this.setSize(width, height)
+    constructor(container: Element, window: Window){
+        this.canvasControl.offsetElement = container
+        console.log(this.element.width)
+        console.log(this.element.height)
         this.window = window
+        this.resizeCanvasToDisplaySize()
         this.renderer.setClearColor(new Color(0x500000))
         this.renderer.autoClear = false;
 
         this.camera.fov = 80
-        this.zoomControl.canvas = this.element
         this.zoomControl.zoom = 50
         this.zoomControl.maxZoom = 100
         this.zoomControl.minZoom = 10
@@ -62,46 +53,11 @@ export class PanoramaViewer {
         this.controls.enableZoom = true
         this.controls.zoomSpeed = 2
 		this.controls.rotateSpeed = 0.5
-        //this.controls.enablePan = false;
         const targetContorPoint = new Vector3(0, 0, 0.001)
         this.controls.target = targetContorPoint
-        // this.camera.lookAt(targetContorPoint)
         this.scene.add(this.camera)
         this.scene.add(this.sphere.mesh)
         this.animate()
-
-
-        this.window.addEventListener('click', (event: MouseEvent) => {
-            if (this.clickable == false){
-                return
-            }
-            const canvasPoint = CanvasControl.getCanvasPoint(new Vector2(event.pageX, event.pageY), this.element)
-            if (!CanvasControl.isCanvasPointValid(new Vector2(event.pageX, event.pageY), this.element)){
-                    return
-            }
-            this.raycaster.setFromCamera(canvasPoint, this.camera)
-            const rayIntersections =this.raycaster.intersectObjects(this.arrows.map((elem) => elem.mesh)) 
-            const arrow = this.arrows.find((elem) => elem.mesh.id == rayIntersections.at(0)?.object.id)
-            if (arrow){
-                this.setPoint(arrow.point.id)       
-            }
-        })
-        this.window.addEventListener('mousemove', (event: MouseEvent) => {
-            const canvasPoint = CanvasControl.getCanvasPoint(new Vector2(event.pageX, event.pageY), this.element)
-            if (!CanvasControl.isCanvasPointValid(new Vector2(event.pageX, event.pageY), this.element)){
-                    return
-            }
-            this.raycaster.setFromCamera(canvasPoint, this.camera)
-            const rayIntersections =this.raycaster.intersectObjects(this.arrows.map((elem) => elem.mesh)) 
-            this.caughtArrows = this.arrows.filter((elem) => elem.mesh.id == rayIntersections.at(0)?.object.id)
-            for (let i = 0; i < this.arrows.length; i++){
-                if (this.caughtArrows.includes(this.arrows[i])){
-                    this.arrows[i].isPointOver = true
-                } else{
-                    this.arrows[i].isPointOver = false
-                }
-            }
-        })
         this.window.addEventListener('mousedown', (_e) => {
             this.clickable = true
         })
@@ -113,8 +69,9 @@ export class PanoramaViewer {
     }
 
 
-    public async addArrows(pointID: number | string){
-        var response = await fetch(`http://localhost:3000/panoramas/one/${pointID}?point=1&connections=1`)
+    public async addArrows(pointID: number | string)
+    {
+        var response = await fetch(`http://localhost:3000/panoramas/point/${pointID}?point=1&connections=1`)
         if (!response.ok){
             return
         }
@@ -124,24 +81,23 @@ export class PanoramaViewer {
             }
             this.arrows.length = 0
         }
-        var connections = (await response.json()).point.pointConnections
+        var panorama = await response.json()
+        console.log(panorama)
+        var connections = panorama.at(0).point.pointConnections
         for (let i = 0; i < connections.length; i++){
+            console.log(connections)
             var point = Point.fromJson(connections[i].point2)
-            var arrow = new PointArrow(point)
-            var normalizedPosition = arrow.pointVector.sub(this.panoramaPoint.position)//.normalize().multiplyScalar(5)
-            console.log(normalizedPosition)
+            var arrow = new PointObject(point, this.canvasControl, this.camera)
+            arrow.clickControl.addOnClick((sender: PointObject, _parameters: any) => {
+                if (sender.isPointOver){
+                    this.setPoint(sender.point.id)
+                }
+            })
+            var normalizedPosition = arrow.pointVector.sub(this.panoramaPoint.position)
             arrow.mesh.position.set(-normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
-            this.frontScene.add(arrow.mesh) 
-            this.arrows.push(arrow)
+            this.arrows.push(arrow) 
+            this.frontScene.add(arrow.mesh)
         }
-    }
-
-    public setSize(width: number, height: number){
-        this._width = width
-        this._height = height
-
-        this.renderer.setSize(width, height)
-        this.camera.aspect = width / height
     }
 
     public setImage(imagePath : string){
@@ -153,27 +109,39 @@ export class PanoramaViewer {
     }
 
     public async setPoint(pointID: number){
+        console.log(pointID)
         const point = await new Point(pointID).parse()
         this.panoramaPoint = point
-        console.log(point)
         this.sphere.mesh.rotation.set(0, (Math.PI / 180) * point.imageRotation, 0)
         this.setImage(this.panoramaPoint.imagePath)    
         this.addArrows(this.panoramaPoint.id)
     }
 
     private render(): void{
-        //this.renderer.clear()
+
+        this.resizeCanvasToDisplaySize()
         this.renderer.render(this.scene, this.camera)
         this.renderer.render(this.frontScene, this.camera)
-        //this.renderer.clearDepth()
     }
 
     private animate(): void{
         this.window.requestAnimationFrame(() => this.animate())
+        //this.resizeCanvasToDisplaySize()
         this.camera.updateProjectionMatrix()
         this.controls.update()
         this.render()
     }
+
+    private resizeCanvasToDisplaySize() {
+        const width = this.canvasControl.offsetElement.clientWidth;
+        const height = this.canvasControl.offsetElement.clientHeight;
+        if (this.element.width !== width || this.element.height !== height) {
+            this.element.width = width
+            this.element.height = height
+            this.renderer.setSize(this.element.width, this.element.height, false)
+            this.camera.aspect = this.element.width / this.element.height
+        }
+      }
     
     
     

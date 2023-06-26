@@ -53,7 +53,7 @@ app.use((_req, res) => {
             'message':'Invalid Request',
             'statusCode':404
           },
-           message: 'Testing!'
+           message: 'eroor :('
         });
   });
 module.exports = app;

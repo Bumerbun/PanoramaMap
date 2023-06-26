@@ -17,6 +17,7 @@ router.get('/', async (request: Request, response: Response) => {
 
 router.get('/one/:id', async  (request: Request, response: Response, next: NextFunction) => {
   const id = Number.parseInt(request.params.id)
+  console.log(id)
   if (!id){
     return next("invalid request")
   }id
@@ -67,6 +68,17 @@ router.get('/columns', async (request: Request, response: Response, next: NextFu
     console.log(err)
     next(err)
   }
+})
+
+router.get('/point/:id', async (request: Request, response: Response, next: NextFunction) => {
+  const id = Number.parseInt(request.params.id)
+  const connectionsrelation =  Boolean(Number(request.query.connections))  
+  var panoramapoint = await AppDataSource.manager.getRepository(PanoramaPoint)
+  .find({
+    where:{point: {id: id}}, 
+    relations: {point: {pointConnections: !connectionsrelation ? connectionsrelation : {point2:connectionsrelation}  }}
+  })
+  response.json(panoramapoint)
 })
 module.exports = router;
   

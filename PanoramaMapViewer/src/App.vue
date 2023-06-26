@@ -6,7 +6,7 @@ import PanaromaViewer from './components/PanaromaViewer.vue';
 </script>
 
 <template>
-  <PanaromaViewer :width="900" :height="900"></PanaromaViewer>
+  <PanaromaViewer></PanaromaViewer>
 </template>
 
 <style scoped>

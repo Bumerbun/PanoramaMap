@@ -15,25 +15,29 @@ export class ZoomControl{
     public minZoom: number
     public zoomSpeed: number = 1
     public isEnabled: boolean = true
-    public canvas?: HTMLCanvasElement
+    public canvasControl : CanvasControl
     private camera: PerspectiveCamera
     
-    constructor(camera: PerspectiveCamera, canvas?: HTMLCanvasElement){
+    constructor(camera: PerspectiveCamera, canvasControl: CanvasControl){
         this.maxZoom = this.zoom
         this.minZoom = this.zoom
         this.camera = camera
-        if (canvas){
-            this.canvas = canvas
-        }
+        this.canvasControl = canvasControl
 
         window.addEventListener("wheel", (event: WheelEvent) => {
             if (!this.isEnabled){
                 return
             }
             const tempZoom = this.zoom + (event.deltaY / (100 / this.zoomSpeed))
+            if(document.elementFromPoint(event.clientX, event.clientY) != this.canvasControl.canvas){
+                return
+            } 
+
+            // const windowPoint = new Vector2(event.pageX, event.pageY)
+            // const canvasPoint = this.canvasControl.getCanvasPoint(windowPoint)
             var isPointValid = true
-            if (this.canvas)
-                isPointValid = CanvasControl.isCanvasPointValid(new Vector2(event.pageX, event.pageY), this.canvas)
+            if (this.canvasControl.canvas)
+                isPointValid = this.canvasControl.isCanvasPointValid(new Vector2(event.clientX, event.clientY))
             if (!isPointValid)
                 return
             this.zoom = tempZoom

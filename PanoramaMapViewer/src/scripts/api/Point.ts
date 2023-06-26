@@ -27,17 +27,31 @@ export class Point{
             ObjectParser.fillFromJson(this, json)
         }
     }
-
-    public async parse():Promise<Point>{
-        const response = await fetch(`http://localhost:3000/panoramas/one/${this.id}?point=1`)
+    public async parsePanorama() {
+        const response = await fetch(`http://localhost:3000/panoramas/one/${this.id}?point=1&connections=1`)
         if (!response.ok){
             throw new Error("panorama fetch fail")
         }
         const panorama = await response.json()
+        console.log(response)
         ObjectParser.fillFromJson(this, panorama)
         const response2 = await fetch(`http://localhost:3000/points/one/${panorama.point.id}`)
         const point = await response2.json()
         ObjectParser.fillFromJson(this, point)
+        return this
+    }
+    public async parse():Promise<Point>{
+        console.log(this.id)
+        const response = await fetch(`http://localhost:3000/panoramas/point/${this.id}?connections=1`)
+        if (!response.ok){
+            throw new Error("panorama fetch fail")
+        }
+        const panorama = (await response.json()).at(0)
+        console.log(response)
+        ObjectParser.fillFromJson(this, panorama)
+        // const response2 = await fetch(`http://localhost:3000/points/one/${panorama.point.id}`)
+        // const point = await response2.json()
+        ObjectParser.fillFromJson(this, panorama.point)
         return this
     }
 

@@ -1,7 +1,9 @@
 
 <template>
-    <div id="threejs-container"></div>
-    <div id="buildingpreview"></div>
+  <div class="main">
+    <div class="inner" id="threejs-container"></div>
+    <div class="inner map" id="buildingpreview"></div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -13,21 +15,27 @@ export default {
     height: Number
   },
   mounted() {
+
+    var offsetelement = document.getElementsByClassName("main")[0]
+    
     const element = document.getElementById("threejs-container")
     if (!element){
       return
     }
     
-    console.log(element.getBoundingClientRect())
-    var viewer = new PanoramaViewer(this.width??1200, this.height??600, window)
+    console.log(element.clientWidth)
+    var viewer = new PanoramaViewer(offsetelement, window)
     viewer.setPoint(1)
     element.appendChild(viewer.element)
 
-    const elem2 = document.getElementById("buildingpreview")
-    var preview = new BuildingPreview(this.width??1200, this.height??600, window, viewer.camera)
+    const element2 = document.getElementById("buildingpreview")
+    if (!element2){
+      return
+    }
+    var preview = new BuildingPreview(window, viewer.canvasControl, element2, viewer)
     preview.setPoints()
-    elem2?.appendChild(preview.element)
-    console.log(preview)
+    preview.setBuildings()
+    element2.appendChild(preview.element)
   }
   
 }

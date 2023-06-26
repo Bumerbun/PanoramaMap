@@ -17,7 +17,7 @@ router.get("/",async (request: Request, response: Response) => {
 
 router.get("/one/:id", async (request: Request, response: Response) => {
     const id = Number.parseInt(request.params.id)
-    const connectionsrelation =  Boolean(Number(request.query.connections))  
+    const connectionsrelation =  Boolean(Number(request.query.connections))
     const typerelation =  Boolean(Number(request.query.ptype))
     const point = await AppDataSource.getRepository(Point).findOne({
         where: {id: id},
