@@ -32,9 +32,6 @@ export class ZoomControl{
             if(document.elementFromPoint(event.clientX, event.clientY) != this.canvasControl.canvas){
                 return
             } 
-
-            // const windowPoint = new Vector2(event.pageX, event.pageY)
-            // const canvasPoint = this.canvasControl.getCanvasPoint(windowPoint)
             var isPointValid = true
             if (this.canvasControl.canvas)
                 isPointValid = this.canvasControl.isCanvasPointValid(new Vector2(event.clientX, event.clientY))
@@ -50,8 +47,6 @@ export class ZoomControl{
                 return
             }
             this.zoom = tempZoom
-
-            
         })
     }
 

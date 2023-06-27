@@ -22,11 +22,7 @@ export class RoomObject {
     
     constructor(room: Room){
         this.room = room
-
-        var average = this.room.points.map((elem) => +elem.x + +elem.y + +elem.z)
-                                    .reduce((prev, current) => prev + current, 0) / (this.room.points.length * 3)
-        console.log(average)
-        const geometry = new ConvexGeometry(this.room.points.map((elem) => new Vector3(elem.position.x, elem.position.y, elem.position.z).subScalar(0)))
+        const geometry = new ConvexGeometry(this.room.points.map((elem) => new Vector3(-elem.position.x, elem.position.y, elem.position.z).subScalar(0)))
         this.mesh.geometry = geometry
         this.mesh.geometry.scale(1,1,1)
         const material = new MeshBasicMaterial({color: "#BBBBFF", transparent: true, opacity: 0.2})

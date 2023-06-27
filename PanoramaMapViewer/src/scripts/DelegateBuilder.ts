@@ -8,7 +8,7 @@ export class DelegateBuilder {
     constructor() {
         this.callers = [];
     }
-
+    
     invoke(sender: any, parameters: any) {
         for (var i = 0; i < this.callers.length; i++) {
             var caller = this.callers[i];

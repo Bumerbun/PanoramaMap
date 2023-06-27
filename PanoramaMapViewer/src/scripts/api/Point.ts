@@ -33,7 +33,6 @@ export class Point{
             throw new Error("panorama fetch fail")
         }
         const panorama = await response.json()
-        console.log(response)
         ObjectParser.fillFromJson(this, panorama)
         const response2 = await fetch(`http://localhost:3000/points/one/${panorama.point.id}`)
         const point = await response2.json()
@@ -41,16 +40,12 @@ export class Point{
         return this
     }
     public async parse():Promise<Point>{
-        console.log(this.id)
         const response = await fetch(`http://localhost:3000/panoramas/point/${this.id}?connections=1`)
         if (!response.ok){
             throw new Error("panorama fetch fail")
         }
         const panorama = (await response.json()).at(0)
-        console.log(response)
         ObjectParser.fillFromJson(this, panorama)
-        // const response2 = await fetch(`http://localhost:3000/points/one/${panorama.point.id}`)
-        // const point = await response2.json()
         ObjectParser.fillFromJson(this, panorama.point)
         return this
     }
@@ -65,7 +60,6 @@ export class Point{
             throw new Error("panorama fetch fail")
         }
         var pointids = (await response.json()) as any[]
-        console.log(pointids)
         const points = await Promise.all(pointids.map(async (item) => await new Point(item.panorama_id).parse())) 
         return points
     }

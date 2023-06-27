@@ -35,7 +35,7 @@ export class PointObject {
         this.canvasControl = canvasControl
         this.camera = camera
         this.mesh.geometry = new SphereGeometry(1)
-        this.mesh.geometry.scale(0.3,0.3,0.3)
+        this.mesh.geometry.scale(0.2,0.2,0.2)
         this.mesh.material = new MeshBasicMaterial({color: "#772222", depthTest: false})
         this.mesh.renderOrder = 999;
 

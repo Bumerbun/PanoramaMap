@@ -22,10 +22,8 @@ export default {
     if (!element){
       return
     }
-    
-    console.log(element.clientWidth)
     var viewer = new PanoramaViewer(offsetelement, window)
-    viewer.setPoint(1)
+    viewer.setPoint(24)
     element.appendChild(viewer.element)
 
     const element2 = document.getElementById("buildingpreview")

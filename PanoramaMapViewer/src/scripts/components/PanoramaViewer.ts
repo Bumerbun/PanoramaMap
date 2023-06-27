@@ -4,7 +4,8 @@ import {
     PerspectiveCamera, 
     TextureLoader, 
     Color,
-    Vector3
+    Vector3,
+    Cache
 } from "three"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
@@ -36,8 +37,6 @@ export class PanoramaViewer {
 
     constructor(container: Element, window: Window){
         this.canvasControl.offsetElement = container
-        console.log(this.element.width)
-        console.log(this.element.height)
         this.window = window
         this.resizeCanvasToDisplaySize()
         this.renderer.setClearColor(new Color(0x500000))
@@ -77,15 +76,16 @@ export class PanoramaViewer {
         }
         if (this.arrows.length != 0){
             for (let i = 0; i < this.arrows.length; i++){
+                this.arrows[i].mesh.geometry.dispose()
+                this.arrows[i].mesh.material.dispose()
                 this.frontScene.remove(this.arrows[i].mesh)
             }
             this.arrows.length = 0
         }
+        Cache.clear()
         var panorama = await response.json()
-        console.log(panorama)
         var connections = panorama.at(0).point.pointConnections
         for (let i = 0; i < connections.length; i++){
-            console.log(connections)
             var point = Point.fromJson(connections[i].point2)
             var arrow = new PointObject(point, this.canvasControl, this.camera)
             arrow.clickControl.addOnClick((sender: PointObject, _parameters: any) => {
@@ -104,12 +104,12 @@ export class PanoramaViewer {
         var texture = this.loader.load(`http://localhost:3000/static/images/${imagePath}` ,
             () => this.render()
         )
+        this.sphere.texture.dispose()
         this.sphere.texture = texture
         this.render()
     }
 
     public async setPoint(pointID: number){
-        console.log(pointID)
         const point = await new Point(pointID).parse()
         this.panoramaPoint = point
         this.sphere.mesh.rotation.set(0, (Math.PI / 180) * point.imageRotation, 0)
@@ -118,7 +118,6 @@ export class PanoramaViewer {
     }
 
     private render(): void{
-
         this.resizeCanvasToDisplaySize()
         this.renderer.render(this.scene, this.camera)
         this.renderer.render(this.frontScene, this.camera)

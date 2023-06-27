@@ -1,4 +1,4 @@
-import {PerspectiveCamera, Scene, WebGLRenderer } from "three"
+import {PerspectiveCamera, Scene, Vector3, WebGLRenderer } from "three"
 //import { ZoomControl } from "./ZoomControl"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { PointObject } from "./PointObject"
@@ -37,7 +37,7 @@ export class BuildingPreview{
         this.resizeCanvasToDisplaySize()
         this.renderer.setClearColor(0x000000, 0.3)
         this.renderer.autoClear = false;
-        this.camera.position.z = -10
+        this.camera.position.z = -30
         this.controls.minDistance = 0.1
 		this.controls.maxDistance = 2000
         this.scene.background = null
@@ -57,18 +57,20 @@ export class BuildingPreview{
             const point = await new Point(pointids.at(i).panorama_id).parsePanorama()
             const arrow = new PointObject(point, tempCanvasControl, this.camera)
             arrow.clickControl.addOnClick((sender: PointObject, _parameters: any) => {
-                console.log(_parameters)
                 
                 if (sender.isPointOver){
                     this.connectedViewer.setPoint(sender.point.id)
                 }
             })
-            arrow.mesh.position.set(point.x, point.y, point.z)
+            arrow.mesh.position.set(-point.x, point.y + 1.7, point.z)
             arrow.mesh.material.depthTest = true
-            arrow.mesh.geometry.scale(2,2,2)
+            arrow.mesh.geometry.scale(3,3,3)
             this.points.push(arrow)
             this.scene.add(arrow.mesh)
         }
+
+        // const center = this.scene.children.map((e) => e.position).reduce((s, n) => s.add(n), new Vector3()).divideScalar(this.scene.children.length)
+        // this.controls.target = center
     }
 
     public async setBuildings(){
@@ -84,10 +86,13 @@ export class BuildingPreview{
             this.scene.add(roomObject.group)
         }
 
+        const center = this.scene.children.map((e) => e.position).reduce((s, n) => s.add(new Vector3(+n.x, +n.y, +n.z)), new Vector3()).divideScalar(this.scene.children.length)
+        this.controls.target = center
     }
 
 
     private render(): void{
+        //this.renderer.clear()
         this.renderer.render(this.scene, this.camera)
     }
 
