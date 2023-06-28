@@ -5,7 +5,6 @@ import {
     TextureLoader, 
     Color,
     Vector3,
-    Cache
 } from "three"
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js'
 import { SphereImage } from "./SphereImage"
@@ -76,25 +75,38 @@ export class PanoramaViewer {
         }
         if (this.arrows.length != 0){
             for (let i = 0; i < this.arrows.length; i++){
-                this.arrows[i].mesh.geometry.dispose()
-                this.arrows[i].mesh.material.dispose()
                 this.frontScene.remove(this.arrows[i].mesh)
+                // this.arrows[i].mesh.geometry.dispose()
+                // this.arrows[i].mesh.material.dispose()
             }
-            this.arrows.length = 0
+            // this.arrows.length = 0
         }
-        Cache.clear()
+        // Cache.clear()
         var panorama = await response.json()
         var connections = panorama.at(0).point.pointConnections
         for (let i = 0; i < connections.length; i++){
             var point = Point.fromJson(connections[i].point2)
+            var founded = this.arrows.filter((elem) => elem.point.id == point.id).at(0)
+            if (founded){
+                var normalizedPosition = new Vector3()
+                normalizedPosition = normalizedPosition.copy(founded.pointVector)
+                normalizedPosition = normalizedPosition.sub(this.panoramaPoint.position)
+                founded.mesh.position.set(-normalizedPosition.x, +normalizedPosition.y, +normalizedPosition.z) 
+            
+                this.frontScene.add(founded.mesh)
+                continue
+            }
             var arrow = new PointObject(point, this.canvasControl, this.camera)
             arrow.clickControl.addOnClick((sender: PointObject, _parameters: any) => {
                 if (sender.isPointOver){
                     this.setPoint(sender.point.id)
                 }
             })
-            var normalizedPosition = arrow.pointVector.sub(this.panoramaPoint.position)
-            arrow.mesh.position.set(-normalizedPosition.x, normalizedPosition.y, normalizedPosition.z) 
+            
+            var normalizedPosition = new Vector3()
+            normalizedPosition = normalizedPosition.copy(arrow.pointVector)
+            normalizedPosition = normalizedPosition.sub(this.panoramaPoint.position)
+        arrow.mesh.position.set(-normalizedPosition.x, +normalizedPosition.y, +normalizedPosition.z) 
             this.arrows.push(arrow) 
             this.frontScene.add(arrow.mesh)
         }

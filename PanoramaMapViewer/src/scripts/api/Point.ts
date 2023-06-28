@@ -17,7 +17,7 @@ export class Point{
     description: string
 
     public get position(){
-        return new Vector3(this.x, this.y, this.z)
+        return new Vector3(+this.x, +this.y, +this.z)
     }
 
     constructor(pointId: number, {json}: IPoint = {}){

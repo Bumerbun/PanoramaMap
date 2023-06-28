@@ -62,7 +62,7 @@ export class BuildingPreview{
                     this.connectedViewer.setPoint(sender.point.id)
                 }
             })
-            arrow.mesh.position.set(-point.x, point.y + 1.7, point.z)
+            arrow.mesh.position.set(-point.x, +point.y + 1.7, +point.z)
             arrow.mesh.material.depthTest = true
             arrow.mesh.geometry.scale(3,3,3)
             this.points.push(arrow)
@@ -87,6 +87,7 @@ export class BuildingPreview{
         }
 
         const center = this.scene.children.map((e) => e.position).reduce((s, n) => s.add(new Vector3(+n.x, +n.y, +n.z)), new Vector3()).divideScalar(this.scene.children.length)
+        console.log(center)
         this.controls.target = center
     }
 
